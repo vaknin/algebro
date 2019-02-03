@@ -1,35 +1,37 @@
 //To do:
-//Add a menu
-//Add powers(6^2 = 36)
 //Add a timer
+//Mobile version(click one of 3 options)
 
 
 //Inputs
 let question = document.getElementById('question');
 let input = document.getElementById('input');
-let scoreNode = document.getElementById('score');
+let scoreElement = document.getElementById('score');
+let streakElement = document.getElementById('streak');
+let highscoreElement = document.getElementById('highscore');
+let competitiveElement = document.getElementById('competitive');
+let livesElement = document.getElementById('lives');
+let timeElement = document.getElementById('time');
 
 //Radio buttons
-let radioMulti = document.getElementById('multiplication');
+let radioMulti = document.getElementById('multi');
 let radioPowers = document.getElementById('powers');
-let multi = false, powers = false;
+let multi = false, powers = false, competitive = false;
 
 //Variables
-let score = 0;
-let streak = 1;
-let lastNumber;
-let answer;
-let playedChords = [];
+let score = 0, highscore = 0, streak = 1, lives = 3, time = 5;
+let lastNumber, answer, timer, secondInterval;
+let majorChords, minorChords, lastChord, playedChords;
 
-//Range
-let min = 3;
-let max = 13;
+//Range(i.e: if min=1 and max=10, you can get any exercise between the two numbers, i.e 2x6, 1x10, 9^2, but not 11*2)
+let min = 1;
+let max = 10;
 let inputMin = document.getElementById('min');
 let inputMax = document.getElementById('max');
 inputMin.value = min;
 inputMax.value = max;
-inputMin.addEventListener('input', onMinMaxChanged);
-inputMax.addEventListener('input', onMinMaxChanged);
+
+//#region Events
 
 //Input min max event listener
 function onMinMaxChanged(e){
@@ -48,19 +50,10 @@ function onMinMaxChanged(e){
         break;
     }
     
-    //if min > max so absoulte value
+    highscore = 0;
+    highscoreElement.innerHTML = `ניקוד שיא: ${highscore}`;
     start();
 }
-
-//Listen for 'Enter' keypress to accept answer
-document.addEventListener('keypress', function(event){
-    if (event.keyCode == 13){
-        checkAnswer();
-    }
-});
-
-radioMulti.addEventListener('change', onRadioChanged);
-radioPowers.addEventListener('change', onRadioChanged);
 
 //Change mode
 function onRadioChanged(e){
@@ -75,9 +68,52 @@ function onRadioChanged(e){
         break;
     }
     
+    highscore = 0;
+    highscoreElement.innerHTML = `ניקוד שיא: ${highscore}`;
     input.focus();
     start();
 }
+
+//Competitive mode(Scores, lives, time)
+function onCompetitive(e){
+    //Enable competitive mode
+    if(e.target.checked){
+        competitive = true;
+        scoreElement.style.visibility = "visible";
+        highscoreElement.style.visibility = "visible";
+        streakElement.style.visibility = "visible";
+        timeElement.style.visibility = "visible";
+        livesElement.style.visibility = "visible";
+        start();
+    }
+
+    //Disable competitive mode
+    else{
+        competitive = false;
+        scoreElement.style.visibility = "hidden";
+        highscoreElement.style.visibility = "hidden";
+        streakElement.style.visibility = "hidden";
+        timeElement.style.visibility = "hidden";
+        livesElement.style.visibility = "hidden";
+        clearInterval(timer);
+    }
+
+}
+
+//Listen for 'Enter' keypress to accept answer
+document.addEventListener('keypress', function(event){
+    if (event.keyCode == 13){
+        checkAnswer();
+    }
+});
+
+radioMulti.addEventListener('change', onRadioChanged);
+radioPowers.addEventListener('change', onRadioChanged);
+inputMin.addEventListener('input', onMinMaxChanged);
+inputMax.addEventListener('input', onMinMaxChanged);
+competitiveElement.addEventListener('change', onCompetitive);
+
+//#endregion
 
 //Get a new exercise
 function getExercise(){
@@ -86,7 +122,7 @@ function getExercise(){
     while(true){
         n1 = Math.round(Math.random() * Number((max - min)) + Number(min));
         
-        if (n1 != lastNumber){
+        if (n1 != lastNumber || min - max == 0){
             lastNumber = n1;
             break;
         }
@@ -104,44 +140,92 @@ function getExercise(){
         answer = n1 * n1;
         question.innerHTML = `${n1.toString()}²`;
     }
+
+    //Time to solve (competitive mode only)
+    if (competitive){
+        timeManager();
+    }
 }
 
 //Check if the answer is correct
 function checkAnswer(){
     //Correct
     if (answer == input.value){
-        score += 1 * streak;
-        if (score % 10 == 0){
-            streak++;
+
+        //Competitive mode only
+        if (competitive){            
+            score += 1 * streak;
+            if (score > highscore){
+                highscore = score;
+                highscoreElement.innerHTML = `ניקוד שיא: ${highscore}`;
+                animateHeader(highscoreElement, 350);
+            }
+            if (score % 10 == 0 && streak <= 8){
+                streak *=2;
+                streakElement.innerHTML = `x${streak} :מכפיל`;
+                animateHeader(streakElement, 200);
+            }
+            scoreElement.innerHTML = `ניקוד: ${score}`;
         }
-        
-        scoreNode.innerHTML = score;
         getExercise();
-        playChord();
+        playChord("Major");
     }
 
     //Incorrect
     else{
+        timeManager();
         input.value = "";
-        score = 0;
-        streak = 1;
-        scoreNode.innerHTML = score;
+        for(let i = 0; i < 3; i++){
+            playChord("Minor");
+        }        
+        shake();
+        
+        //Competitive mode only        
+        if (competitive){
+            lives--;
+            livesElement.innerHTML = `${lives - 1} :נסיונות`;
+            animateHeader(livesElement, 250);
+            if (lives == 0){
+                start();
+                
+                return;
+            }
+            streak = 1;
+            streakElement.innerHTML = `x${streak} :מכפיל`;
+        }
     }
 }
 
+async function animateHeader(element, ms){
+    element.style.fontSize = '5rem';
+    await sleep(ms);
+    element.style.fontSize = '4rem';
+}
+
 //Randomly play a chord
-function playChord(){
-    //If no chords left in the array, rebuild it
-    if (chords.length == 0){
+function playChord(type){
+
+    if (majorChords.length == 0 || minorChords.length == 0){
         initializeChords();
     }
 
     //If the chord has already been played, stay in loop
     while (true){
-        let n = chords[Math.round(Math.random() * (chords.length - 1))];
+        let c;
+        switch(type){
+            case "Major":
+            c = majorChords;
+            break;
+            case "Minor":
+            c = minorChords;
+            break;
+        }
+        let n = c[Math.round(Math.random() * (c.length - 1))];
         
         //Chord hasn't been played yet
-        if (playedChords.indexOf(n) == -1 && n != undefined){
+        if (n != undefined && playedChords.indexOf(n) == -1 && lastChord != n){
+            lastChord = n;
+
             //Play the chord
             let note1 = new Audio(`sounds/${n[0]}.wav`);
             let note2 = new Audio(`sounds/${n[1]}.wav`);
@@ -151,8 +235,8 @@ function playChord(){
             note3.play();
 
             //Remove it from the array, to not play it again
-            let index = chords.indexOf(n);
-            chords.splice(index, 1);
+            let index = c.indexOf(n);
+            c.splice(index, 1);
             playedChords.push(n);
             break;
         }
@@ -164,31 +248,110 @@ function sleep(ms){
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-//Put some major and minor chords inside arrays
+//Initialize minor and major chords, and put them inside appropriate arrays
 function initializeChords(){
 
+    //Major chords
+    let Amajor = ["A", "Cs", "E"];
+    let Bmajor = ["B", "Eb", "Fs"];
     let Cmajor = ["C", "E", "G"];
     let Dmajor = ["D", "Fs", "A"];
     let Emajor = ["E", "Gs", "B"];
     let Fmajor = ["F", "A", "C"];
     let Gmajor = ["G", "B", "D"];
-    let Amajor = ["A", "Cs", "E"];
-    let Bmajor = ["B", "Eb", "Fs"];
+    
+    //Minor chords
+    let Aminor = ["A", "C", "E"];
+    let Bminor = ["B", "D", "Fs"];
+    let Cminor = ["C", "Eb", "G"];
+    let Dminor = ["D", "F", "A"];
+    let Eminor = ["E", "G", "B"];
+    let Fminor = ["F", "Gs", "C"];
+    let Gminor = ["G", "Bb", "D"];
 
-    chords = [Amajor, Bmajor, Cmajor, Dmajor, Emajor, Fmajor, Gmajor];
+    majorChords = [Amajor, Bmajor, Cmajor, Dmajor, Emajor, Fmajor, Gmajor];
+    minorChords = [Aminor, Bminor, Cminor, Dminor, Eminor, Fminor, Gminor];
     playedChords = [];
+}
+
+//Wrong answers shake the screen
+async function shake(){
+    let element = document.getElementById('questionDiv');
+    let currentLeft = Number((getComputedStyle(element).left).slice(0, -2));
+    let currentTop = Number((getComputedStyle(element).top).slice(0, -2));
+    let intensity = 25;
+    let random1, random2;
+
+    random1 = Math.round(Math.random());
+    if (random1 == 0){
+        random1 = -1;
+    }
+
+    random2 = Math.round(Math.random());
+    if (random2 == 0){
+        random2 = -1;
+    }
+
+    let newLeft = Number(currentLeft + (intensity * random1)) + "px";
+    let newTop = Number(currentTop + (intensity * random2)) + "px";
+    element.style.left = newLeft;
+    element.style.top = newTop;
+    await sleep(150);
+    element.style.left = `${currentLeft}px`;
+    element.style.top = `${currentTop}px`;
+}
+
+//Every second, decrease the slider value, when it reaches 0, exercise is over and 1 life is lost
+function timeManager(){
+    clearInterval(timer);
+    timeElement.value = time;
+    timer = setInterval(function(){
+        timeElement.value -= 0.01;
+        console.log(timeElement.value);
+        
+        //Out of time
+        if (timeElement.value <= 0){
+            clearInterval(timer);
+            timeElement.value = time;
+            input.value = "";
+            for(let i = 0; i < 3; i++){
+                playChord("Minor");
+            }
+            shake();
+            lives--;
+            livesElement.innerHTML = `${lives - 1} :נסיונות`;
+            animateHeader(livesElement, 250);
+            if (lives == 0){
+                start();
+                return;
+            }
+            streak = 1;
+            streakElement.innerHTML = `x${streak} :מכפיל`;
+            timeElement.value = time;
+            getExercise();
+        }
+
+    }, 10);
 }
 
 //Main method
 function start(){
     input.value = "";
-    score = 0;
-    scoreNode.innerHTML = score;
-    streak = 1;
+    if (competitive){
+        lives = 3;
+        livesElement.innerHTML = `${lives - 1} :נסיונות`;
+        score = 0;
+        scoreElement.innerHTML = `ניקוד: ${score}`;
+        streak = 1;
+        streakElement.innerHTML = `x${streak} :מכפיל`;
+    }
+
     initializeChords();
     getExercise();
 }
 
 radioMulti.checked = false;
 radioPowers.checked = false;
+competitiveElement.checked = true;
+competitiveElement.click();
 radioMulti.click();

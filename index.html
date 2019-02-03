@@ -9,20 +9,43 @@
 </head>
 <body>
     <div id="container">
-        <div id="radios">
-            <input id="multiplication" class="radio" type="radio" name="mode">
-            <label for="multiplication">Multiplication</label>
-
-            <input id="powers" class="radio" type="radio" name="mode">
-            <label for="powers">Powers</label>
-            <div id="minmax">
-                <label for="minmax">Range</label>
-                <input id="min" type="text">
-                <input id="max" type="text">
-            </div>
+        <div id="timediv">
+            <input type="range" id="time" min="0" max = "5" value="5" step="0.01" disabled="true">
         </div>
+
+        <div id="radios">
+            <div id="multidiv">
+                <label for="multi">כפל</label>
+                <input id="multi" class="radio" type="radio" name="mode">
+            </div>
+
+            <div id="powersdiv">
+                <label for="powers">חזקות</label>
+                <input id="powers" class="radio" type="radio" name="mode">
+            </div>
+
+            <div id="competitivediv">
+                    <label for="competitive">מצב תחרותי</label>
+                <input type="checkbox" id="competitive">
+            </div>
+
+            <div id="minmax">
+                <input id="min" type="text">
+                <p id="wave">~</p>
+                <input id="max" type="text">
+                <label for="minmax">טווח<br>מספרים</label>
+            </div>
+
+        </div>
+
         <p id="score"></p>
-        <p id="question"></p>
+        <p id="highscore"></p>
+        <p id="streak"></p>
+        <p id="lives"></p>
+
+        <div id="questionDiv">
+            <p id="question"></p>
+        </div>
         <input id="input" type="text">
     </div>
 </body>
