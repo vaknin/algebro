@@ -2,36 +2,112 @@
 //Add a menu
 //Add powers(6^2 = 36)
 //Add a timer
+
+
+//Inputs
 let question = document.getElementById('question');
 let input = document.getElementById('input');
 let scoreNode = document.getElementById('score');
+
+//Radio buttons
+let radioMulti = document.getElementById('multiplication');
+let radioPowers = document.getElementById('powers');
+let multi = false, powers = false;
+
+//Variables
 let score = 0;
 let streak = 1;
-let min = 3;
-let max = 13;
+let lastNumber;
 let answer;
 let playedChords = [];
 
-//Listen for 'Enter' keypress
+//Range
+let min = 3;
+let max = 13;
+let inputMin = document.getElementById('min');
+let inputMax = document.getElementById('max');
+inputMin.value = min;
+inputMax.value = max;
+inputMin.addEventListener('input', onMinMaxChanged);
+inputMax.addEventListener('input', onMinMaxChanged);
+
+//Input min max event listener
+function onMinMaxChanged(e){
+    //If the value of the input is empty or not a number, ignore it
+    if (isNaN(e.target.value) || e.target.value == "" || e.target.value == undefined){
+        return;
+    }
+
+    switch(e.target){
+        case inputMin:
+        min = inputMin.value;
+        break;
+
+        case inputMax:
+        max = inputMax.value;
+        break;
+    }
+    
+    //if min > max so absoulte value
+    start();
+}
+
+//Listen for 'Enter' keypress to accept answer
 document.addEventListener('keypress', function(event){
     if (event.keyCode == 13){
         checkAnswer();
     }
 });
 
+radioMulti.addEventListener('change', onRadioChanged);
+radioPowers.addEventListener('change', onRadioChanged);
+
+//Change mode
+function onRadioChanged(e){
+    switch(e.target){
+        case radioMulti:
+        multi = true;
+        powers = false;
+        break;
+        case radioPowers:
+        multi = false;
+        powers = true;
+        break;
+    }
+    
+    input.focus();
+    start();
+}
+
 //Get a new exercise
 function getExercise(){
     input.value = "";
+    let n1 = 0, n2 = 0;
+    while(true){
+        n1 = Math.round(Math.random() * Number((max - min)) + Number(min));
+        
+        if (n1 != lastNumber){
+            lastNumber = n1;
+            break;
+        }
+    }
 
-    //Multiply
-    let n1 = Math.round(Math.random() * (max - min)) + min;
-    let n2 = Math.round(Math.random() * (max - min)) + min;
-    answer = n1 * n2;
-    question.innerHTML = `${n1.toString()} X ${n2.toString()}`;
+    //Multiplication
+    if(multi){
+        n2 = Math.round(Math.random() * Number((max - min)) + Number(min));
+        answer = n1 * n2;
+        question.innerHTML = `${n1.toString()} X ${n2.toString()}`;
+    }
+
+    //n1 to the power of itself(maybe others soon)
+    else if(powers){
+        answer = n1 * n1;
+        question.innerHTML = `${n1.toString()}²`;
+    }
 }
 
 //Check if the answer is correct
-async function checkAnswer(){
+function checkAnswer(){
     //Correct
     if (answer == input.value){
         score += 1 * streak;
@@ -46,7 +122,6 @@ async function checkAnswer(){
 
     //Incorrect
     else{
-        document.body.style.backgroundColor = `rgb(${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)})`;
         input.value = "";
         score = 0;
         streak = 1;
@@ -84,10 +159,12 @@ function playChord(){
     }
 }
 
+//Pause execution for (ms) seconds
 function sleep(ms){
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+//Put some major and minor chords inside arrays
 function initializeChords(){
 
     let Cmajor = ["C", "E", "G"];
@@ -103,8 +180,15 @@ function initializeChords(){
 }
 
 //Main method
-document.body.style.backgroundColor = `rgb(${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)})`;
-input.focus();
-scoreNode.innerHTML = score;
-initializeChords()
-getExercise();
+function start(){
+    input.value = "";
+    score = 0;
+    scoreNode.innerHTML = score;
+    streak = 1;
+    initializeChords();
+    getExercise();
+}
+
+radioMulti.checked = false;
+radioPowers.checked = false;
+radioMulti.click();
