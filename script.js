@@ -1,9 +1,7 @@
 //To do:
 //Mobile version(click one of 3 options)
-//Fix streak (%10 isn't working proprely atm)
-//Mute button
-//Allow user to set seconds for timer
 
+//#region Variables
 //Inputs
 let question = document.getElementById('question');
 let input = document.getElementById('input');
@@ -13,16 +11,23 @@ let highscoreElement = document.getElementById('highscore');
 let livesElement = document.getElementById('lives');
 let timeElement = document.getElementById('time');
 let competitiveElement = document.getElementById('competitive');
+let label_competitive = document.getElementById('label_comp');
+let slider_setTime = document.getElementById('setTime');
+let label_setTime = document.getElementById('label_setTime');
+let div_setTime = document.getElementById('div_setTime');
+let btn_start = document.getElementById('btn_start');
+let btn_mute = document.getElementById('btn_mute');
+
 
 //Radio buttons - Change mode
 let radioMulti = document.getElementById('multi');
 let radioPowers = document.getElementById('powers');
 let radioAddition = document.getElementById('addition');
 let radioSubtraction = document.getElementById('subtraction');
-let mode;
+radioMulti.checked = true;
+let mode = "multi";
 
-//Variables
-let score = 0, highscore = 0, streak = 1, lives = 3, time = 5, competitive = false;
+let score = 0, highscore = 0, streak = 1, lives = 3, time = 7, competitive = false, started = false, muted = false;
 let lastNumber, answer, timer, secondInterval;
 let majorChords, minorChords, lastChord, playedChords;
 
@@ -33,6 +38,12 @@ let inputMin = document.getElementById('min');
 let inputMax = document.getElementById('max');
 inputMin.value = min;
 inputMax.value = max;
+
+competitiveElement.checked = false;
+label_setTime.innerHTML = `זמן לשאלה: ${time}`;
+slider_setTime.value = time;
+
+//#endregion
 
 //#region Events
 
@@ -55,7 +66,6 @@ function onMinMaxChanged(e){
     
     highscore = 0;
     highscoreElement.innerHTML = `ניקוד שיא: ${highscore}`;
-    start();
 }
 
 //Change mode
@@ -63,32 +73,57 @@ function onRadioChanged(e){
     mode = e.target.id;
     highscore = 0;
     highscoreElement.innerHTML = `ניקוד שיא: ${highscore}`;
-    input.focus();
-    start();
+    if (started)
+        getExercise();
 }
 
 //Competitive mode(Scores, lives, time)
-function onCompetitive(e){
+function onCompetitiveCheck(e){
     //Enable competitive mode
     if(e.target.checked){
         competitive = true;
-        scoreElement.style.visibility = "visible";
-        highscoreElement.style.visibility = "visible";
-        streakElement.style.visibility = "visible";
-        timeElement.style.visibility = "visible";
-        livesElement.style.visibility = "visible";
-        start();
+        scoreElement.style.display = "inline";
+        highscoreElement.style.display = "inline";
+        streakElement.style.display = "inline";
+        livesElement.style.display = "inline";
+        timeElement.style.display = "inline";
+        slider_setTime.value  = time;
+        timeElement.max = time;
+        timeElement.value = time;
+        label_setTime.innerHTML = `זמן לשאלה: ${time}`;
+        initializeCompetitiveValues();
+        if (started){
+            input.focus();
+            startCounting();
+            disableMenuButtons(true);
+        }
     }
 
     //Disable competitive mode
     else{
         competitive = false;
-        scoreElement.style.visibility = "hidden";
-        highscoreElement.style.visibility = "hidden";
-        streakElement.style.visibility = "hidden";
-        timeElement.style.visibility = "hidden";
-        livesElement.style.visibility = "hidden";
+        scoreElement.style.display = "none";
+        highscoreElement.style.display = "none";
+        streakElement.style.display = "none";
+        timeElement.style.display = "none";
+        livesElement.style.display = "none";
         clearInterval(timer);
+        disableMenuButtons(false);
+    }
+}
+
+//Mute and unmute
+function onMute(){
+    muted = !muted;
+
+    //Mute audio
+    if (muted){
+        btn_mute.innerHTML = "מושתק";
+    }
+
+    //Unmute
+    else{
+        btn_mute.innerHTML = "השתק";
     }
 }
 
@@ -105,10 +140,23 @@ radioAddition.addEventListener('change', onRadioChanged);
 radioSubtraction.addEventListener('change', onRadioChanged);
 inputMin.addEventListener('input', onMinMaxChanged);
 inputMax.addEventListener('input', onMinMaxChanged);
-competitiveElement.addEventListener('change', onCompetitive);
+competitiveElement.addEventListener('change', onCompetitiveCheck);
+slider_setTime.addEventListener('mouseup', function (){
+    time = slider_setTime.value;
+    timeElement.max = time;
+    timeElement.value = time;
+});
+slider_setTime.addEventListener('input', function (){
+    label_setTime.innerHTML = `זמן לשאלה: ${slider_setTime.value}`;
+
+});
+
+btn_start.addEventListener('click', start);
+btn_mute.addEventListener('click', onMute);
 
 //#endregion
 
+//#region Exercise mechanics
 //Get a new exercise
 function getExercise(){
     input.value = "";
@@ -163,12 +211,17 @@ function getExercise(){
         
     //Time to solve (competitive mode only)
     if (competitive){
-        timeManager();
+        startCounting();
     }
 }
 
 //Check if the answer is correct
 function checkAnswer(){
+    //Empty input
+    if (input.value == ""){
+        return;        
+    }
+
     //Correct
     if (answer == input.value){
 
@@ -188,26 +241,28 @@ function checkAnswer(){
             scoreElement.innerHTML = `ניקוד: ${score}`;
         }
         getExercise();
-        playChord("Major");
+        if (!muted)
+            playChord("Major");
     }
 
     //Incorrect
     else{
         input.value = "";
-        for(let i = 0; i < 3; i++){
-            playChord("Minor");
-        }        
+        if (!muted){
+            for(let i = 0; i < 3; i++){
+                playChord("Minor");
+            }        
+        }
         shake();
         
         //Competitive mode only        
         if (competitive){
-            timeManager();
+            startCounting();
             lives--;
             livesElement.innerHTML = `${lives - 1} :נסיונות`;
             animateHeader(livesElement, 250);
             if (lives == 0){
-                start();
-                
+                gameOver();
                 return;
             }
             streak = 1;
@@ -296,7 +351,7 @@ function initializeChords(){
 
 //Wrong answers shake the screen
 async function shake(){
-    let element = document.getElementById('questionDiv');
+    let element = document.getElementById('question');
     let currentLeft = Number((getComputedStyle(element).left).slice(0, -2));
     let currentTop = Number((getComputedStyle(element).top).slice(0, -2));
     let intensity = Math.round(Math.random() * 60 + 15);
@@ -322,7 +377,7 @@ async function shake(){
 }
 
 //Every second, decrease the slider value, when it reaches 0, exercise is over and 1 life is lost
-function timeManager(){
+function startCounting(){
     clearInterval(timer);
     timeElement.value = time;
     timer = setInterval(function(){
@@ -333,15 +388,17 @@ function timeManager(){
             clearInterval(timer);
             timeElement.value = time;
             input.value = "";
-            for(let i = 0; i < 3; i++){
-                playChord("Minor");
+            if (!muted){
+                for(let i = 0; i < 3; i++){
+                    playChord("Minor");
+                }
             }
             shake();
             lives--;
             livesElement.innerHTML = `${lives - 1} :נסיונות`;
             animateHeader(livesElement, 250);
             if (lives == 0){
-                start();
+                gameOver();
                 return;
             }
             streak = 1;
@@ -353,24 +410,62 @@ function timeManager(){
     }, 10);
 }
 
-//Main method
-function start(){
-    input.value = "";
-    if (competitive){
-        lives = 3;
-        livesElement.innerHTML = `${lives - 1} :נסיונות`;
-        score = 0;
-        scoreElement.innerHTML = `ניקוד: ${score}`;
-        streak = 1;
-        streakElement.innerHTML = `x${streak} :מכפיל`;
-    }
+//If the competitive checkbox is checked, call this function(variables initialization)
+function initializeCompetitiveValues(){
+    lives = 3;
+    livesElement.innerHTML = `${lives - 1} :נסיונות`;
+    score = 0;
+    scoreElement.innerHTML = `ניקוד: ${score}`;
+    highscoreElement.innerHTML = `ניקוד שיא: ${highscore}`;
+    streak = 1;
+    streakElement.innerHTML = `x${streak} :מכפיל`;
+}
 
+//#endregion
+
+//#region Game Manager
+
+//disable
+function disableMenuButtons(state){
+    slider_setTime.disabled = state;
+    radioMulti.disabled = state;
+    radioPowers.disabled = state;
+    radioAddition.disabled = state;
+    radioSubtraction.disabled = state;
+    inputMin.disabled = state;
+    inputMax.disabled = state;
+}
+
+//Start button onClick
+function start(){
+    started = true;
+    if (competitive){
+        initializeCompetitiveValues();
+        timeElement.style.display = "inline";
+        disableMenuButtons(true);
+    }
+    btn_start.style.display = "none";
+    question.style.display = "inline";
+    input.style.display = "inline";
+    input.value = "";
+    input.focus();
     initializeChords();
     getExercise();
 }
 
-radioMulti.checked = false;
-radioPowers.checked = false;
-competitiveElement.checked = true;
-competitiveElement.click();
-radioMulti.click();
+//Stop the game (lives <= 0 or user decided to quit)
+function gameOver(){
+    clearInterval(timer);
+    started = false;
+    if (competitive){
+        initializeCompetitiveValues();
+        timeElement.style.display = "none";
+        disableMenuButtons(false);
+    }
+    btn_start.style.display = "inline";
+    question.style.display = "none";
+    input.style.display = "none";
+    input.value = "";
+}
+
+//#endregion

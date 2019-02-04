@@ -35,8 +35,13 @@
             </div>
 
             <div id="competitivediv">
-                    <label for="competitive">מצב תחרותי</label>
                 <input type="checkbox" id="competitive">
+                <label id ="label_comp" for="competitive">מצב תחרותי</label>
+            </div>
+
+            <div id="div_setTime">
+                <label id="label_setTime" for="setTime"></label><br>
+                <input type="range" id="setTime" min="1", max="45" value="10">
             </div>
 
             <div id="minmax">
@@ -53,9 +58,15 @@
         <p id="streak"></p>
         <p id="lives"></p>
 
-        <div id="questionDiv">
-            <p id="question"></p>
-        </div>
+        <h1 id="question"></h1>
+
+        <button id="btn_start">
+                התחל
+        </button>
+
+        <button id="btn_mute">
+            השתק
+        </button>
         <input id="input" type="text">
     </div>
 </body>

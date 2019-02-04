@@ -16,6 +16,15 @@ body{
     background: teal;
 }
 
+/* Center an absolutely positioned element */
+#input, #btn_start, #time, #question{
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+}
+
 /* Menu */
 
 #radios{
@@ -23,29 +32,40 @@ body{
     position: absolute;
     left: 2%;
     top: 12.5%;
-    width: 15%;
+    width: 20%;
     height: 75%;
     display: flex;
     flex-direction: column;
     align-items: center;
     background-color: rgba(0,0,0,0.2);
     border-radius: 6px;
-    transition: background 0.3s ease-in-out;
+    transition: background 0.5s ease;
 }
 
 #radios:hover {
-    background-color: rgba(0,0,0,0.3);
+    background-color: rgba(0,0,0,0.1);
 }
 
 #radios div{
     margin-bottom: 2rem;
 }
 
-#competitivediv label{
-    margin-right: 0.5rem;
+#competitive:checked ~ #label_comp{
+    font-size: 4rem;
+    font-weight: 900;
+    color: #2c2c2c;
 }
 
-#multidiv, #powersdiv, #additiondiv, #subtractiondiv, #competitivediv, #minmax{
+#competitive{
+    order: 1;
+}
+
+#competitivediv label{
+    margin-right: 0.5rem;
+    transition: font-size 0.5s ease;
+}
+
+#multidiv, #powersdiv, #additiondiv, #subtractiondiv, #minmax, #competitivediv{
     display: flex;
 }
 
@@ -55,6 +75,15 @@ body{
 
 #competitivediv label:hover , #multidiv label:hover, #powersdiv label:hover, #additiondiv label:hover, #subtractiondiv label:hover{
     font-size: 3rem;
+}
+
+
+/* Set time slider */
+#div_setTime{
+    text-align: center;
+}
+#setTime{
+    margin-top: 0.5rem;
 }
 
 .radio{
@@ -98,6 +127,7 @@ body{
 /* Headers */
 
 #score, #highscore, #streak, #lives{
+    display: none;
     position: absolute;
     font-size: 4rem;
     transition: font-size 0.5s ease;
@@ -127,11 +157,9 @@ body{
 /* Time slider */
 
 #time{
-    position: absolute;
-    left: 33%;
+    display: none;
     top: 5%;
     outline: 0;
-    width: 35%;
     width: 35%;
     background: #2c2c2c;
     outline: none;
@@ -149,40 +177,70 @@ body{
     background: rgb(95, 95, 95);
 }
 
-
 /*Exercise header */
-
-#questionDiv{
-    position: absolute;
-    left: 35%;
-    top: 7.5%;
+#question{
+    z-index: -1;
+    text-align: center;
+    font-size: 20rem;
+    font-weight: 600;
+    display: none;
+    color: black;
 }
 
-#questionDiv p{
-    font-size: 20rem;
+#btn_start{
+    width: 35%;
+    top: 25%;
+    height: 35%;
+    text-align: center;
+    font-size: 8rem;
+    background-color: white;
+    color: black;
+    border: 0;
+    border-radius: 10px;
+    transition: all 0.5s ease;
+}
+
+#btn_start:hover{
+    color: white;
+    font-size: 9rem;
+    background-color: black;
+}
+
+#btn_mute{
+    position: absolute;
+    right: 2%;
+    bottom: 2%;
+    width: 10%;
+    font-size: 3rem;
+    border-radius: 10px;
 }
 
 /* Answer input */
 
-#input{
-    position: absolute;
-    left: 27.5%;
-    top: 60%;
+#input{    
+    display: none;
+    top: 50%;
     font-size: 5rem;
     margin-top: 7.5rem;
-    width: 50%;
+    width: 10%;
     border: 0;
     border-radius: 6px;
     text-align: center;
-    transition: background 0.3s ease-in-out;
-    background-color: rgba(0,0,0,0.2);
-
+    transition: all 0.5s ease;
+    background-color: rgba(0,0,0,0.4);
 }
 
+
 #input:hover{
+    color: black;
     background-color: rgba(0,0,0,0.3);
 }
 
-#powers, #multi, #competitive, #subtraction, #addition, #powersdiv label, #multidiv label, #competitivediv label, #additiondiv label, #subtractiondiv label, #input{
+#input:focus{
+    padding: 1rem;
+    width: 20%;
+}
+
+#powers, #multi, #competitive, #btn_start, #btn_mute, #subtraction, #setTime, #addition, #powersdiv label, #multidiv label, #competitivediv label, #additiondiv label, #subtractiondiv label, #input{
     cursor: pointer;
 }
