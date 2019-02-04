@@ -17,16 +17,16 @@ body{
 }
 
 /* Menu */
+
 #radios{
     overflow: auto;
     position: absolute;
     left: 2%;
-    top: 25%;
+    top: 12.5%;
     width: 15%;
-    height: 55%;
+    height: 75%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
     background-color: rgba(0,0,0,0.2);
     border-radius: 6px;
@@ -41,56 +41,31 @@ body{
     margin-bottom: 2rem;
 }
 
-#competitivediv{
-    display: flex;
-}
-
 #competitivediv label{
     margin-right: 0.5rem;
-    transition: font-size 0.5s ease;
 }
 
-#competitivediv label:hover {
-    font-size: 3rem;
-}
-
-#multidiv{
-    top: 0;
-    margin-top: 1rem;
+#multidiv, #powersdiv, #additiondiv, #subtractiondiv, #competitivediv, #minmax{
     display: flex;
 }
 
-#multidiv label{
+#multidiv label, #powersdiv label, #additiondiv label, #subtractiondiv label, #competitivediv label{
     transition: font-size 0.5s ease;
 }
 
-#multidiv label:hover {
+#competitivediv label:hover , #multidiv label:hover, #powersdiv label:hover, #additiondiv label:hover, #subtractiondiv label:hover{
     font-size: 3rem;
-}
-
-#powersdiv label{
-    transition: font-size 0.5s ease;
-}
-
-#powersdiv label:hover {
-    font-size: 3rem;
-}
-
-#powersdiv{
-    display: flex;
 }
 
 .radio{
     margin-left: 0.5rem;
 }
 
-
 #radios label{
     font-size: 2rem;
 }
 
 #minmax{
-    display: flex;
     text-align: center;
     justify-content: center;
 }
@@ -118,43 +93,38 @@ body{
     font-size: 2.75rem;
     font-weight: 100;
 }
-/* End Menu */
+/* End menu region */
 
+/* Headers */
+
+#score, #highscore, #streak, #lives{
+    position: absolute;
+    font-size: 4rem;
+    transition: font-size 0.5s ease;
+    right: 2%;
+}
 
 #score{
-    position: absolute;
-    right: 2%;
     top: 2%;
-    font-size: 4rem;
 }
 
 #highscore{
-    position: absolute;
-    right: 2%;
     top: 15%;
-    font-size: 4rem;
-    transition: font-size 0.5s ease;
 }
 
 #streak{
-    position: absolute;
-    right: 2%;
     top: 27%;
-    font-size: 4rem;
-    transition: font-size 0.5s ease;
 }
 
 #lives{
-    position: absolute;
-    right: 2%;
     top: 39%;
-    font-size: 4rem;
-    transition: font-size 0.5s ease;
 }
 
 #timediv{
     width: 100%;
 }
+
+/* Time slider */
 
 #time{
     position: absolute;
@@ -162,22 +132,25 @@ body{
     top: 5%;
     outline: 0;
     width: 35%;
-    width: 35%; /* Full-width */
-    background: #2c2c2c; /* Grey background */
-    outline: none; /* Remove outline */
+    width: 35%;
+    background: #2c2c2c;
+    outline: none;
 }
 
 #time:-webkit-slider-thumb {
-    width: 25px; /* Set a specific slider handle width */
-    height: 25px; /* Slider handle height */
-    background: rgb(95, 95, 95); /* Green background */
+    width: 25px;
+    height: 25px;
+    background: rgb(95, 95, 95);
   }
 
   #time::-moz-range-thumb {
-    width: 25px; /* Set a specific slider handle width */
-    height: 25px; /* Slider handle height */
-    background: rgb(95, 95, 95); /* Green background */
-  }
+    width: 25px;
+    height: 25px;
+    background: rgb(95, 95, 95);
+}
+
+
+/*Exercise header */
 
 #questionDiv{
     position: absolute;
@@ -189,6 +162,8 @@ body{
     font-size: 20rem;
 }
 
+/* Answer input */
+
 #input{
     position: absolute;
     left: 27.5%;
@@ -199,9 +174,15 @@ body{
     border: 0;
     border-radius: 6px;
     text-align: center;
-    background: rgb(95, 95, 95);
+    transition: background 0.3s ease-in-out;
+    background-color: rgba(0,0,0,0.2);
+
 }
 
-#powers, #multi, #competitive, #powersdiv label, #multidiv label, #competitivediv label, #input{
+#input:hover{
+    background-color: rgba(0,0,0,0.3);
+}
+
+#powers, #multi, #competitive, #subtraction, #addition, #powersdiv label, #multidiv label, #competitivediv label, #additiondiv label, #subtractiondiv label, #input{
     cursor: pointer;
 }
